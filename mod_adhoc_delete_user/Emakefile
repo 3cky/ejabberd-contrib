@@ -1,0 +1,2 @@
+{'../ejabberd-dev/src/gen_mod', [{outdir, "../ejabberd-dev/ebin"},{i,"../ejabberd-dev/include"}]}.
+{'src/mod_adhoc_delete_user',     [{outdir, "ebin"},{i,"../ejabberd-dev/include"}]}.

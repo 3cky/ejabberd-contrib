@@ -1,0 +1,8 @@
+%%%   MODULES
+
+{modules,
+ [
+  ...,
+  {mod_adhoc_add_rosteritem, []},
+  ...
+ ]}.

@@ -1,0 +1,21 @@
+%%%   ACCESS CONTROL LISTS
+
+[...,
+ {acl, conference, {server, "conference.localhost"}},
+ ... ].
+
+%%%   ACCESS RULES
+
+[...,
+ {access, filter_slang_whitelist, [{allow, admin}, {allow, conference}]},
+ ... ].
+
+%%%   MODULES
+
+{modules,
+ [
+  ...,
+  {mod_filter_slang, [{slang_file, "/etc/ejabberd/slang_regexp.cfg"}
+                      {slang_mask, "[censored]"}]},
+  ...
+ ]}.

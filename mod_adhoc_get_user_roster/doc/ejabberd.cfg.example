@@ -1,0 +1,8 @@
+%%%   MODULES
+
+{modules,
+ [
+  ...,
+  {mod_adhoc_get_user_roster, []},
+  ...
+ ]}.
