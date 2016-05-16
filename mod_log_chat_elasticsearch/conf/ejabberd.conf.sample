@@ -1,0 +1,10 @@
+
+%%%   MODULES
+
+{modules,
+ [
+  ...,
+  {mod_log_chat_elasticsearch,  [{server, "http://localhost:9200"},
+                                 {index_prefix, "ejabberd-"}]},
+  ...
+ ]}.
