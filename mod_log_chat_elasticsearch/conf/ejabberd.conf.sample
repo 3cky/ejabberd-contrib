@@ -5,6 +5,7 @@
  [
   ...,
   {mod_log_chat_elasticsearch,  [{server, "http://localhost:9200"},
-                                 {index_prefix, "ejabberd-"}]},
+                                 {index_prefix, "ejabberd-"},
+                                 {flush_size, 500}]},
   ...
  ]}.

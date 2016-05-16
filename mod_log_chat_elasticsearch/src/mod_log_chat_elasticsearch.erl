@@ -21,28 +21,30 @@
 
 -define(DEFAULT_SERVER, "http://localhost:9200").
 -define(DEFAULT_INDEX_PREFIX, "ejabberd-").
+-define(DEFAULT_FLUSH_SIZE, 500).
 
 -define(BULK_ENDPOINT, "/_bulk").
 
--record(config, {server=?DEFAULT_SERVER, index_prefix=?DEFAULT_INDEX_PREFIX}).
+-record(config, {server=?DEFAULT_SERVER, index_prefix=?DEFAULT_INDEX_PREFIX, flush_size=?DEFAULT_FLUSH_SIZE}).
 
 start(Host, Opts) ->
-    ?DEBUG("start: host: ~p, opts: ~p~n", [Host, Opts]),
+    ?DEBUG("starting, opts: ~p~n", [Opts]),
     ibrowse:start(),
     catch ets:new(mod_log_chat_elasticsearch, [named_table, public, {read_concurrency, true}]),
     EsServer = gen_mod:get_opt(server, Opts, ?DEFAULT_SERVER),
     EsIndexPrefix = gen_mod:get_opt(index_prefix, Opts, ?DEFAULT_INDEX_PREFIX),
-    ets:insert(mod_log_chat_elasticsearch, {config, #config{server=EsServer, index_prefix=EsIndexPrefix}}),
+    FlushSize = gen_mod:get_opt(flush_size, Opts, ?DEFAULT_FLUSH_SIZE),
+    ets:insert(mod_log_chat_elasticsearch, {config, #config{server=EsServer, index_prefix=EsIndexPrefix,
+                                                            flush_size=FlushSize}}),
+    buffer_clean(),
     ejabberd_hooks:add(user_send_packet, Host, ?MODULE, log_packet_send, 55),
     ejabberd_hooks:add(user_receive_packet, Host, ?MODULE, log_packet_receive, 55),
     ok.
 
 stop(Host) ->
-    ejabberd_hooks:delete(user_send_packet, Host,
-			  ?MODULE, log_packet_send, 55),
-    ejabberd_hooks:delete(user_receive_packet, Host,
-			  ?MODULE, log_packet_receive, 55),
-    protets:drop(mod_log_chat_elasticsearch),
+    ?DEBUG("stopping~n", []),
+    ejabberd_hooks:delete(user_send_packet, Host, ?MODULE, log_packet_send, 55),
+    ejabberd_hooks:delete(user_receive_packet, Host, ?MODULE, log_packet_receive, 55),
     ok.
 
 log_packet_send(From, To, Packet) ->
@@ -114,21 +116,37 @@ index_packet(From, To, Packet = {xmlelement, _, Attrs, _}) ->
             end,
         Timestamp = io_lib:format("~B-~2..0B-~2..0BT~2..0B:~2..0B:~2..0B.000Z",
                                   [Y, M, D, Hour, Min, Sec]),
-        Buffer = [index_metadata(Index, Type),
+        Bulk = [index_metadata(Index, Type),
                 <<"\n">>,
                 index_source(Timestamp, FromUser, FromServer, ToUser, ToServer, Subject, Body),
                 <<"\n">>],
-        flush_buffer(Config, Buffer)
+        [{buffer, Buffer}] = ets:lookup(mod_log_chat_elasticsearch, buffer),
+        UpdatedBuffer = Buffer ++ Bulk,
+        case ets:update_counter(mod_log_chat_elasticsearch,
+                                buffer_length, 1) >= Config#config.flush_size of
+            true ->
+                buffer_clean(),
+                buffer_flush(Config, UpdatedBuffer);
+            false ->
+                buffer_store(UpdatedBuffer)
+        end
     end.
 
-flush_buffer(Config, Buffer) ->
+buffer_store(Buffer) ->
+    ets:insert(mod_log_chat_elasticsearch, {buffer, Buffer}).
+
+buffer_clean() ->
+    buffer_store([]),
+    ets:insert(mod_log_chat_elasticsearch, {buffer_length, 0}).
+
+buffer_flush(Config, Buffer) ->
     EsServer = Config#config.server,
     Result = ibrowse:send_req(EsServer ++ ?BULK_ENDPOINT, [], post, Buffer, []),
     case catch Result of
         {ok, "200", _, _} ->
             ok;
         Error ->
-            ?ERROR_MSG("indexing error: ~p~n", [Error])
+            ?ERROR_MSG("buffer flush error: ~p~n", [Error])
     end.
 
 index_metadata(Index, Type) ->
