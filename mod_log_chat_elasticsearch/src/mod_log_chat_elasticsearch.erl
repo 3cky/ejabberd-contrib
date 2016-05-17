@@ -66,6 +66,7 @@ stop(Host) ->
 %% gen_server callbacks
 
 init([_Host, Opts]) ->
+    ssl:start(),
     ibrowse:start(),
     catch ets:new(mod_log_chat_elasticsearch, [named_table, public, {read_concurrency, true}]),
     EsServer = gen_mod:get_opt(server, Opts, ?DEFAULT_SERVER),
