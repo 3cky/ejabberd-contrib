@@ -17,10 +17,10 @@
 %%
 %% Include files
 %%
+-include_lib("xmpp/include/xmpp.hrl").
 -include("logger.hrl").
 -include("mod_roster.hrl").
 -include("mod_muc_room.hrl").
--include_lib("xmpp/include/xmpp.hrl").
 
 
 %% gen_mod callbacks
