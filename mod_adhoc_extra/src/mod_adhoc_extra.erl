@@ -394,7 +394,7 @@ set_form(From, Host, ?NS_ADMINL(<<"change-user-nick">>), Lang, XData) ->
         ?ERROR_MSG("Can't change user ~p nickname to ~p", [UserJID, Nick]),
         {error, xmpp:err_bad_request(?T("Can't change user nickname"), Lang)}
     end;
-set_form(From, Host, ?NS_ADMINL(<<"get-user-roster">>), Lang, XData) ->
+set_form(From, Host, ?NS_ADMINL(<<"get-user-roster">>), _Lang, XData) ->
     ?DEBUG("set_form: get user roster: ~p", [XData]),
     UserJIDString = get_value(<<"accountjid">>, XData),
     UserJID = jid:decode(UserJIDString),
