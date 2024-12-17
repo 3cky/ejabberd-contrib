@@ -1,0 +1,5 @@
+author: "Victor Antonovich <v.antonovich@gmail.com>"
+category: "data"
+summary: "Filter slang words in messages"
+home: "https://github.com/3cky/ejabberd-contrib/tree/master/"
+url: "git@github.com:3cky/ejabberd-contrib.git"

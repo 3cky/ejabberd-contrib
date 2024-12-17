@@ -1,0 +1,4 @@
+modules:
+  mod_filter_slang:
+    slang_file: auto
+    slang_mask: auto
