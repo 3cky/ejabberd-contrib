@@ -417,10 +417,10 @@ change_user_nick(Nick, UserJID) ->
 		io_lib:format("%@~s", [binary_to_list(Server)]), 
 		binary_to_list(jid:encode(UserJID))),
 	lists:foreach(fun(UserRosterItem) -> 
-		change_roster_nick(UserRosterItem, Nick) end, UserRosterItems).
+		change_roster_nick(UserRosterItem, Server, Nick) end, UserRosterItems).
 
-change_roster_nick({UserRosterJIDString, UserRosterContactJIDString}, Nick) ->
-	UserRosterJID = jid:decode(UserRosterJIDString),
+change_roster_nick({LUser, UserRosterContactJIDString}, LServer, Nick) ->
+	UserRosterJID = jid:make(LUser, LServer),
 	UserRosterContactJID = jid:decode(UserRosterContactJIDString),
 	RosterItem = #roster_item{jid = UserRosterContactJID, name = Nick},
 	case mod_roster:set_item_and_notify_clients(UserRosterJID, RosterItem, false) of
