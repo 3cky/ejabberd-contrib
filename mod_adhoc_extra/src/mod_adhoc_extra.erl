@@ -412,7 +412,7 @@ set_form(From, Host, ?NS_ADMINL(<<"get-user-roster">>), _Lang, XData) ->
 
 change_user_nick(Nick, UserJID) ->
 	?DEBUG("change user nick: user ~p, new nickname ~p", [UserJID, Nick]),
-	UserRosterItems = mod_roster:process_rosteritems("list", "any", "any", "any", 
+	UserRosterItems = mod_roster:process_rosteritems("list", "any", "any", "%@%", 
 		binary_to_list(jid:encode(UserJID))),
 	lists:foreach(fun(UserRosterItem) -> 
 		change_roster_nick(UserRosterItem, Nick) end, UserRosterItems).
