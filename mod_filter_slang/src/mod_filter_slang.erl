@@ -176,7 +176,7 @@ parse_slang_regexp_line(<<Char/utf8, Rest/binary>>, LineDataAccum) ->
 
 filter_user_message(From, To, Msg) ->
     Body = xmpp:get_text(Msg#message.body),
-    ?DEBUG("filter_user_message: from: ~p, to: ~p, body: ~p)", [From, To, Body]),
+    ?DEBUG("filter_user_message: from: ~p, to: ~p, body: ~p", [From, To, Body]),
     if (Body /= <<>>) ->
         FilteredBody = filter_user_message_body(Body),
         replace_message_body(Msg, FilteredBody);
@@ -187,9 +187,8 @@ filter_user_message(From, To, Msg) ->
 filter_user_message_body(Body) ->
     case ets:lookup(mod_filter_slang_table, slang_regexp) of
         [{slang_regexp, SlangRegexp}] ->
-            BodyText = binary:bin_to_list(Body),
             [{slang_mask, SlangMask}] = ets:lookup(mod_filter_slang_table, slang_mask),
-            re:replace(BodyText, SlangRegexp, SlangMask, [global, {return, binary}]);
+            re:replace(Body, SlangRegexp, SlangMask, [global, {return, binary}]);
         _ ->
             Body
     end.
