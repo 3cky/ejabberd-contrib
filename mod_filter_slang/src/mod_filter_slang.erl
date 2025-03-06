@@ -201,7 +201,7 @@ replace_message_body(Msg, NewBody) ->
 
 is_whitelisted(#jid{luser=LUser, lserver=LServer} = From) ->
     case LUser of
-    "" ->
+    <<"">> ->
         true;
     _ ->
         case acl:match_rule(LServer, ?WHITELIST_ACL, From) of
