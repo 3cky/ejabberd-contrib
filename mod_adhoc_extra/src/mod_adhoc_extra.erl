@@ -249,16 +249,10 @@ adhoc_local_commands(From,
 	    #adhoc_command{status = canceled, lang = Lang,
 			   node = Node, sid = SessionID};
        XData == undefined, ActionIsExecute ->
-	   case get_form(LServer, LNode, Lang) of
-	     {result, Form} ->
-		 xmpp_util:make_adhoc_response(
-		   Request,
-		   #adhoc_command{status = executing, xdata = Form});
-	     {result, Status, Form} ->
-		 xmpp_util:make_adhoc_response(
-		   Request,
-		   #adhoc_command{status = Status, xdata = Form})
-	   end;
+		{result, Form} = get_form(LServer, LNode, Lang),
+		xmpp_util:make_adhoc_response(
+			Request, 
+			#adhoc_command{status = executing, xdata = Form});
        XData /= undefined, ActionIsExecute ->
 	    case set_form(From, LServer, LNode, Lang, XData) of
 		{result, Res} ->
