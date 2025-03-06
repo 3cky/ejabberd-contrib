@@ -257,8 +257,7 @@ adhoc_local_commands(From,
 	     {result, Status, Form} ->
 		 xmpp_util:make_adhoc_response(
 		   Request,
-		   #adhoc_command{status = Status, xdata = Form});
-	     {error, Error} -> {error, Error}
+		   #adhoc_command{status = Status, xdata = Form})
 	   end;
        XData /= undefined, ActionIsExecute ->
 	    case set_form(From, LServer, LNode, Lang, XData) of
@@ -387,13 +386,8 @@ set_form(From, Host, ?NS_ADMINL(<<"change-user-nick">>), Lang, XData) ->
     Nick = get_value(<<"usernick">>, XData),
 	true = lists:member(UserServer, ejabberd_option:hosts()),
     true = (UserServer == Host) orelse (get_permission_level(From) == global),
-    case change_user_nick(Nick, UserJID) of
-    ok ->
-        {result, undefined};
-    _ ->
-        ?ERROR_MSG("Can't change user ~p nickname to ~p", [UserJID, Nick]),
-        {error, xmpp:err_bad_request(?T("Can't change user nickname"), Lang)}
-    end;
+    change_user_nick(Nick, UserJID),
+    {result, undefined};
 set_form(From, Host, ?NS_ADMINL(<<"get-user-roster">>), _Lang, XData) ->
     ?DEBUG("set_form: get user roster: ~p", [XData]),
     UserJIDString = get_value(<<"accountjid">>, XData),
@@ -429,8 +423,6 @@ change_roster_nick({LUser, UserRosterContactJIDString}, LServer, Nick) ->
 	end.
 
 %% Copied from mod_admin_extra.erl
-add_rosteritem(LocalUser, LocalServer, User, Server, Nick, Group, Subs) when is_binary(Group) ->
-    add_rosteritem(LocalUser, LocalServer, User, Server, Nick, [Group], Subs);
 add_rosteritem(LocalUser, LocalServer, User, Server, Nick, Groups, Subs) ->
     case {jid:make(LocalUser, LocalServer), jid:make(User, Server)} of
 	{error, _} ->
@@ -449,15 +441,7 @@ build_roster_item(U, S, {add, Nick, Subs, Groups}) when is_list(Groups) ->
     #roster_item{jid = jid:make(U, S),
 		 name = Nick,
 		 subscription = misc:binary_to_atom(Subs),
-		 groups = Groups};
-build_roster_item(U, S, {add, Nick, Subs, Group}) ->
-    Groups = binary:split(Group,<<";">>, [global, trim]),
-    #roster_item{jid = jid:make(U, S),
-		 name = Nick,
-		 subscription = misc:binary_to_atom(Subs),
-		 groups = Groups};
-build_roster_item(U, S, remove) ->
-    #roster_item{jid = jid:make(U, S), subscription = remove}.
+		 groups = Groups}.
 
 make_roster_xmlrpc(Roster) ->
     lists:map(
