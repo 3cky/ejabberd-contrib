@@ -150,7 +150,7 @@ jobs:
                   {jsx, "3.1.0", {git, "https://github.com/talentdeficit/jsx", {branch, "main"}}}, \
                   {ibrowse, "4.4.2", {git, "https://github.com/cmullaparthi/ibrowse", {branch, "master"}}}, \
                  |g' rebar.config
-        sed -i 's|stdlib, |stdlib, cuesport, ecaptcha, fusco, observer_cli, prometheus, recon, |g' rebar.config
+        sed -i 's|stdlib, |stdlib, cuesport, ecaptcha, fusco, observer_cli, prometheus, recon, jsx, ibrowse, |g' rebar.config
 
     - run: make
     - run: make hooks
