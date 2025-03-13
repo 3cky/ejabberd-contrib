@@ -147,6 +147,8 @@ jobs:
                   {prometheus, "1.44.0", {git, "https://github.com/deadtrickster/prometheus.erl", {branch, "master"}}}, \
                   {quantile_estimator, "0.2.1", {git, "https://github.com/deadtrickster/quantile_estimator", {branch, "master"}}}, \
                   {recon, "2.5.5", {git, "https://github.com/ferd/recon", {branch, "master"}}}, \
+                  {jsx, "3.1.0", {git, "https://github.com/talentdeficit/jsx", {branch, "main"}}}, \
+                  {ibrowse, "4.4.2", {git, "https://github.com/cmullaparthi/ibrowse", {branch, "master"}}}, \
                  |g' rebar.config
         sed -i 's|stdlib, |stdlib, cuesport, ecaptcha, fusco, observer_cli, prometheus, recon, |g' rebar.config
 
