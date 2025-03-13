@@ -103,10 +103,10 @@ init([_Host, Opts]) ->
     EsIndexPrefix = gen_mod:get_opt(index_prefix, Opts),
     FlushSize = gen_mod:get_opt(flush_size, Opts),
     FlushTimeout = gen_mod:get_opt(flush_timeout, Opts),
-    State = #state{server = EsServer, 
+    State = #state{server = EsServer,
                    user = EsUser,
                    password = EsPassword,
-                   index_prefix = EsIndexPrefix, 
+                   index_prefix = EsIndexPrefix,
                    flush_size = FlushSize,
                    flush_timeout = FlushTimeout,
                    flush_timer_ref = undefined},
@@ -126,7 +126,7 @@ handle_cast(_Request, State) ->
 
 -spec handle_info(timeout | flush_buffer | _, state()) -> {noreply, state()}.
 handle_info(flush_buffer, State) ->
-    NewState = buffer_flush(State), 
+    NewState = buffer_flush(State),
     {noreply, NewState};
 handle_info(_Info, State) ->
     {noreply, State}.
@@ -178,7 +178,7 @@ log_packet(From, To, #message{type = Type} = Packet, Host) ->
             case is_muc_room(From#jid.luser, From#jid.lserver) of
                 true ->
                     %% don't log messages from MUC room itself
-                    ?DEBUG("dropping message from MUC room: ~s", 
+                    ?DEBUG("dropping message from MUC room: ~s",
                         [fxml:element_to_binary(xmpp:encode(Packet))]),
                     ok;
                 false ->
@@ -227,7 +227,7 @@ index_message(State, Timestamp, From, To, Type, Subject, Body) ->
         [Y, M, D, Hour, Min, Sec, MilliSecs]),
     Bulk = [index_metadata(Index),
             <<"\n">>,
-            index_source(Iso8601Timestamp, Type, FromUser, FromServer, 
+            index_source(Iso8601Timestamp, Type, FromUser, FromServer,
                 ToUser, ToServer, Subject, Body),
             <<"\n">>],
     buffer_append(State, Bulk).
@@ -244,7 +244,7 @@ buffer_append(State, Bulk) ->
     UpdatedBuffer = Buffer ++ Bulk,
     buffer_store(UpdatedBuffer),
     NewState = case {Buffer, State#state.flush_timer_ref} of
-        {[], undefined} -> 
+        {[], undefined} ->
             %% first message in buffer, start timer
             TimerRef = erlang:send_after(State#state.flush_timeout, self(), flush_buffer),
             State#state{flush_timer_ref = TimerRef};
@@ -281,7 +281,7 @@ buffer_send(State, Buffer) ->
     EsUrl = lists:flatten(io_lib:format("~s/~s", [binary_to_list(EsServer), ?BULK_ENDPOINT])),
     EsAuth = case State#state.user of
         <<"">> -> [];
-        _ -> [{basic_auth, {binary_to_list(State#state.user), 
+        _ -> [{basic_auth, {binary_to_list(State#state.user),
                             binary_to_list(State#state.password)}}]
     end,
     Result = ibrowse:send_req(EsUrl, [], post, Buffer, EsAuth),
