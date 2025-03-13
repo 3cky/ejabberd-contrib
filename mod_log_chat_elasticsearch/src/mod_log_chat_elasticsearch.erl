@@ -26,8 +26,10 @@
 
 -define(BULK_ENDPOINT, "_bulk").
 
--record(state, {server :: binary(), 
-                index_prefix :: binary(), 
+-record(state, {server :: binary(),
+                user :: binary(),
+                password :: binary(),
+                index_prefix :: binary(),
                 flush_size :: integer(),
                 flush_timeout :: integer(),
                 flush_timer_ref :: reference() | undefined}).
@@ -55,6 +57,10 @@ stop(Host) ->
 -spec mod_opt_type(atom()) -> econf:validator().
 mod_opt_type(server) ->
     econf:binary();
+mod_opt_type(user) ->
+    econf:binary();
+mod_opt_type(password) ->
+    econf:binary();
 mod_opt_type(index_prefix) ->
     econf:binary();
 mod_opt_type(flush_size) ->
@@ -65,6 +71,8 @@ mod_opt_type(flush_timeout) ->
 -spec mod_options(binary()) -> [{atom(), any()}].
 mod_options(_Host) ->
     [{server, ?DEFAULT_SERVER},
+     {user, <<"">>},
+     {password, <<"">>},
      {index_prefix, ?DEFAULT_INDEX_PREFIX},
      {flush_size, ?DEFAULT_FLUSH_SIZE},
      {flush_timeout, ?DEFAULT_FLUSH_TIMEOUT}].
@@ -90,10 +98,14 @@ init([_Host, Opts]) ->
     ibrowse:start(),
     catch ets:new(mod_log_chat_elasticsearch, [named_table, public, {read_concurrency, true}]),
     EsServer = gen_mod:get_opt(server, Opts),
+    EsUser = gen_mod:get_opt(user, Opts),
+    EsPassword = gen_mod:get_opt(password, Opts),
     EsIndexPrefix = gen_mod:get_opt(index_prefix, Opts),
     FlushSize = gen_mod:get_opt(flush_size, Opts),
     FlushTimeout = gen_mod:get_opt(flush_timeout, Opts),
     State = #state{server = EsServer, 
+                   user = EsUser,
+                   password = EsPassword,
                    index_prefix = EsIndexPrefix, 
                    flush_size = FlushSize,
                    flush_timeout = FlushTimeout,
@@ -267,7 +279,12 @@ buffer_flush(State) ->
 buffer_send(State, Buffer) ->
     EsServer = State#state.server,
     EsUrl = lists:flatten(io_lib:format("~s/~s", [binary_to_list(EsServer), ?BULK_ENDPOINT])),
-    Result = ibrowse:send_req(EsUrl, [], post, Buffer, []),
+    EsAuth = case State#state.user of
+        <<"">> -> [];
+        _ -> [{basic_auth, {binary_to_list(State#state.user), 
+                            binary_to_list(State#state.password)}}]
+    end,
+    Result = ibrowse:send_req(EsUrl, [], post, Buffer, EsAuth),
     case catch Result of
         {ok, "200", _, _} ->
             ok;

@@ -1,8 +1,8 @@
 modules:
   mod_log_chat_elasticsearch:
     server: "http://localhost:9200"
+    # user: "elastic"
+    # password: "secret"
     index_prefix: "ejabberd-"
     flush_size: 500
     flush_timeout: 5000
-
-
