@@ -1,2 +1,4 @@
 *.beam
 */deps/*
+.settings
+erlang_ls.config
