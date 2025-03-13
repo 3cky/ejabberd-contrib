@@ -178,9 +178,7 @@ log_packet(From, To, #message{type = Type} = Packet, Host) ->
             ok;
         _ ->
             index_packet(From, To, Packet, Host)
-        end;
-log_packet(_From, _To, _Packet, _Host) ->
-    ok.
+        end.
 
 index_packet(From, To, #message{type = Type} = Packet, Host) ->
     {Subject, Body} = {case Packet#message.subject of
