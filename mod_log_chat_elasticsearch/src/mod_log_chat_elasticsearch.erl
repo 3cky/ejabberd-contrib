@@ -279,12 +279,13 @@ buffer_flush(State) ->
 buffer_send(State, Buffer) ->
     EsServer = State#state.server,
     EsUrl = lists:flatten(io_lib:format("~s/~s", [binary_to_list(EsServer), ?BULK_ENDPOINT])),
-    EsAuth = case State#state.user of
+    Options = case State#state.user of
         <<"">> -> [];
         _ -> [{basic_auth, {binary_to_list(State#state.user),
                             binary_to_list(State#state.password)}}]
     end,
-    Result = ibrowse:send_req(EsUrl, [], post, Buffer, EsAuth),
+    Headers = [{content_type, "application/x-ndjson"}],
+    Result = ibrowse:send_req(EsUrl, Headers, post, Buffer, Options),
     case catch Result of
         {ok, "200", _, _} ->
             ok;
